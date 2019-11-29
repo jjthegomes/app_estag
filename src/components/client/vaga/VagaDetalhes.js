@@ -40,133 +40,29 @@ class VagaDetalhes extends Component {
     const {id} = this.props.navigation.state.params;
 
     await this.getVaga(id);
-    await this.submitHandler();
   }
-
-  query = id => {
-    return JSON.stringify({
-      query: `
-      query{
-        vagaById(id:"${id}" ){
-            empresa{
-                nome
-                email
-                setor
-                sobre      
-              }
-              _id
-              nome
-              descricao
-              jornada
-              requisitos    
-              tipo
-        }
-      }
-      `,
-    });
-  };
 
   getVaga = async id => {
     try {
-      // console.time('Time Vaga Graphql');
-      // const response = await apiGraphql.post('/graphql', this.query(id));
-      // console.timeEnd('Time Vaga Graphql');
-      // console.log('[size graphql]', response.headers['content-length']);
-
-      // console.time('Time Vaga Rest');
-      // const rest = await api.get('/vaga/' + id);
-      // console.timeEnd('Time Vaga Rest');
-      // console.log('[size rest]', rest.headers['content-length']);
-
-      let tempoInicialGraphql = new Date().getTime();
-      const response = await apiGraphql.post('/graphql', this.query(id));
-      let tempoFinalGraphql = new Date().getTime();
-      let timeG = tempoFinalGraphql - tempoInicialGraphql;
-      let sizeG = response.headers['content-length'];
-
-      let tempoInicialRest = new Date().getTime();
-      const rest = await api.get('/vaga/' + id);
-      let tempoFinalRest = new Date().getTime();
-      let timeR = tempoFinalRest - tempoInicialRest;
-      let sizeR = rest.headers['content-length'];
-
-      const CSV = {
-        csvFilename: './VagaByID.csv',
-
-        data: [
-          {
-            timeR,
-            sizeR,
-            timeG,
-            sizeG,
-          },
-        ],
-      };
-
-      const r = await api.post('/csv', CSV);
-      console.log(CSV);
-
-      this.setState({loading: false, vaga: response.data.data.vagaById});
-      //this.props.navigation.navigate('Login');
+      const response = await api.get('/vaga/' + id);
+      this.setState({loading: false, vaga: response.data});
     } catch (error) {
       console.log(error);
-      console.timeEnd('Time Vaga Graphql');
       this.setState({loading: false});
-      if (error.data.errors.length)
-        Alert.alert('Atenção', error.data.errors[0].message);
     }
   };
 
   submitHandler = async () => {
     const {id} = this.props.navigation.state.params;
 
-    if (this.state.loadingCandidatura == true) return;
+    if (this.state.loadingCandidatura == true) {
+      return;
+    }
 
     this.setState({loadingCandidatura: true});
-    const requestBody = JSON.stringify({
-      query: `
-     mutation {
-      candidatarVaga(
-        vagaId:"${id}"), 
-        {
-          _id
-          vaga{
-            _id
-          }
-        }
-      }
-      `,
-    });
-
     try {
-      let tempoInicialGraphql = new Date().getTime();
-      let response = await apiGraphql.post('/graphql', requestBody);
-      let tempoFinalGraphql = new Date().getTime();
-      let timeG = tempoFinalGraphql - tempoInicialGraphql;
-      let sizeG = response.headers['content-length'];
-
-      let tempoInicialRest = new Date().getTime();
-      let rest = await api.post('/candidatura/', {vaga: id});
-      let tempoFinalRest = new Date().getTime();
-      let timeR = tempoFinalRest - tempoInicialRest;
-      let sizeR = rest.headers['content-length'];
-
-      const CSV = {
-        csvFilename: './CandidatarVaga.csv',
-
-        data: [
-          {
-            timeR,
-            sizeR,
-            timeG,
-            sizeG,
-          },
-        ],
-      };
-
-      const r = await api.post('/csv', CSV);
-      console.log(CSV);
-
+      let response = await api.post('/candidatura/', {vaga: id});
+      console.log(response.data);
       this.setState({loadingCandidatura: false});
       //this.props.navigation.navigate('Vagas');
     } catch (e) {
@@ -266,7 +162,7 @@ class VagaDetalhes extends Component {
                 {this.state.loadingCandidatura ? (
                   <Spinner color={COLORS.THEME} size="small" />
                 ) : (
-                  <Button bordered success onPress={this.submitHandler()}>
+                  <Button bordered success onPress={this.submitHandler}>
                     <Text style={styles.buttonText}>Candidatar</Text>
                   </Button>
                 )}

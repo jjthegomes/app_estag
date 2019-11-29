@@ -25,7 +25,6 @@ import {
 import {connect} from 'react-redux';
 import {setUsuario} from '../../../actions/authGraphql';
 import {COLORS} from '../../../utils/colors';
-import apiGraphql from '../../../config/apiGraphql';
 import api from '../../../config/api';
 
 export class Vagas extends Component {
@@ -41,77 +40,14 @@ export class Vagas extends Component {
     await this.getVagas();
   }
 
-  query = () => {
-    return JSON.stringify({
-      query: `
-            query {
-             vagas{
-              _id
-              nome
-              local
-              descricao
-              jornada
-              requisitos    
-              tipo
-            }
-          }
-      `,
-    });
-  };
-
   getVagas = async () => {
     try {
-      // console.time('Time Vagas Graphql');
-      // const response = await apiGraphql.post('/graphql', this.query());
-      // console.timeEnd('Time Vagas Graphql');
-      // console.log('[size graphql]', response.headers['content-length']);
-
-      // console.time('Time Vagas Rest');
-      // const rest = await api.get('/vaga/');
-      // console.timeEnd('Time Vagas Rest');
-      // console.log('[size rest]', rest.headers['content-length']);
-
-      let tempoInicialGraphql = new Date().getTime();
-      let response = await apiGraphql.post('/graphql', this.query());
-      let tempoFinalGraphql = new Date().getTime();
-      let timeG = tempoFinalGraphql - tempoInicialGraphql;
-      let sizeG = response.headers['content-length'];
-
-      let tempoInicialRest = new Date().getTime();
       let rest = await api.get('/vaga/');
-      let tempoFinalRest = new Date().getTime();
-      let timeR = tempoFinalRest - tempoInicialRest;
-      let sizeR = rest.headers['content-length'];
 
-      const CSV = {
-        csvFilename: './ListarVagas.csv',
-
-        data: [
-          {
-            timeR,
-            sizeR,
-            timeG,
-            sizeG,
-          },
-        ],
-      };
-
-      const r = await api.post('/csv', CSV);
-      console.log(CSV);
-
-      this.setState({loading: false, vagas: response.data.data.vagas});
-      //this.props.navigation.navigate('Login');
-
-      // this.props.navigation.navigate('VagaDetalhes', {
-      //   id: '5dabc3a59945d37b34bb7f6d',
-      // });
+      this.setState({loading: false, vagas: rest.data.vagas});
     } catch (error) {
       console.log(error);
-      console.timeEnd('Time Vagas Graphql');
       this.setState({loading: false});
-
-      if (error.data.errors.length)
-        Alert.alert('Atenção', error.data.errors[0].message);
     }
   };
 

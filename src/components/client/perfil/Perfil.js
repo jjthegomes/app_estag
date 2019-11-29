@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-community/async-storage';
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   StyleSheet,
   Image,
@@ -25,9 +25,9 @@ import {
   Textarea,
 } from 'native-base';
 
-import {format} from 'date-fns';
-import {connect} from 'react-redux';
-import {COLORS} from '../../../utils/colors';
+import { format } from 'date-fns';
+import { connect } from 'react-redux';
+import { COLORS } from '../../../utils/colors';
 
 class Perfil extends Component {
   constructor() {
@@ -59,34 +59,86 @@ class Perfil extends Component {
   };
 
   renderTextArea = (title, text) => {
-    let items = text.split(',');
-    let newText = '';
-    items.map(item => (newText += `${item.trim()}\n`));
+    try {
+      let items = text.split(',');
+      let newText = '';
+      items.map(item => (newText += `${item.trim()}\n`));
 
-    //console.log(newText);
+      //console.log(newText);
 
-    return (
-      <View style={{marginBottom: -20}}>
-        <View>
-          <Text style={styles.leftText}>{title}</Text>
+      return (
+        <View style={{ marginBottom: -20 }}>
+          <View>
+            <Text style={styles.leftText}>{title}</Text>
+          </View>
+          <View>
+            <Textarea value={newText || 'N/A'} disabled rowSpan={4} />
+          </View>
         </View>
+      );
+    } catch (error) {
+      console.log(error);
+      return <View />;
+    }
+  };
+
+  renderRedeSocial = () => {
+    const { usuario } = this.props;
+    if (usuario.redeSocial) {
+      return (
         <View>
-          <Textarea value={newText || 'N/A'} disabled rowSpan={4} />
+          <ListItem>
+            <Left>
+              <Text style={styles.leftText}>Lattes</Text>
+            </Left>
+            <Text>
+              {this.getCampoOpcional(usuario.redeSocial.lattes) || 'N/A'}
+            </Text>
+          </ListItem>
+          <ListItem>
+            <Left>
+              <Text style={styles.leftText}>Linkedin</Text>
+            </Left>
+            <Text>
+              {this.getCampoOpcional(usuario.redeSocial.linkedin) || 'N/A'}
+            </Text>
+          </ListItem>
+          <ListItem last>
+            <Left>
+              <Text style={styles.leftText}>Facebook</Text>
+            </Left>
+            <Text>
+              {this.getCampoOpcional(usuario.redeSocial.facebook) || 'N/A'}
+            </Text>
+          </ListItem>
         </View>
-      </View>
-    );
+      )
+    } else { return <View />; }
+  };
+
+  getCampoOpcional = (campo = null) => {
+    console.log(campo);
+    try {
+      if (campo !== undefined) {
+        return campo;
+      }
+
+      return false;
+    } catch (error) {
+      return false;
+    }
   };
 
   render() {
-    const {usuario} = this.props;
+    const { usuario } = this.props;
     return (
       <Container>
-        <Header style={{backgroundColor: COLORS.THEME}}>
-          <Left style={{flex: 1}} />
-          <Body style={{flex: 2}}>
-            <Title style={{color: '#fff', fontSize: 24}}>Perfil</Title>
+        <Header style={{ backgroundColor: COLORS.THEME }}>
+          <Left style={{ flex: 1 }} />
+          <Body style={{ flex: 2 }}>
+            <Title style={{ color: '#fff', fontSize: 24 }}>Perfil</Title>
           </Body>
-          <Right style={{flex: 1}} />
+          <Right style={{ flex: 1 }} />
         </Header>
         <StatusBar backgroundColor={COLORS.THEME} barStyle="light-content" />
 
@@ -94,82 +146,51 @@ class Perfil extends Component {
           {this.state.loading ? (
             <Spinner color={COLORS.THEME} size="large" />
           ) : (
-            <View>
-              <View style={{flexDirection: 'row', padding: 20}}>
-                <Image
-                  style={styles.avatar}
-                  source={{uri: this.state.profile_image_file}}
-                />
+              <View>
+                <View style={{ flexDirection: 'row', padding: 20 }}>
+                  <Image
+                    style={styles.avatar}
+                    source={{ uri: this.state.profile_image_file }}
+                  />
 
-                <View style={{padding: 20, marginTop: -10}}>
-                  <Text>{usuario.nome.split(' ')[0] || ''}</Text>
-                  <View
-                    style={{
-                      backgroundColor: '#F8F8F8',
-                      width: 120,
-                      height: 2,
-                      marginBottom: 20,
-                      marginTop: 5,
-                    }}
-                  />
-                  <Text>{usuario.nome.split(' ')[1] || ''}</Text>
-                  <View
-                    style={{
-                      backgroundColor: '#F8F8F8',
-                      width: 120,
-                      height: 2,
-                      marginTop: 5,
-                    }}
-                  />
-                  <View style={{marginBottom: -20}}>
-                    <Button
-                      transparent
-                      onPress={() =>
-                        this.props.navigation.navigate('EditarPerfil')
-                      }>
-                      <TextRN style={{color: COLORS.THEME}}>
-                        Editar Perfil
+                  <View style={{ padding: 20, marginTop: -10 }}>
+                    <Text>{usuario.nome.split(' ')[0] || ''}</Text>
+                    <View
+                      style={{
+                        backgroundColor: '#F8F8F8',
+                        width: 120,
+                        height: 2,
+                        marginBottom: 20,
+                        marginTop: 5,
+                      }}
+                    />
+                    <Text>{usuario.nome.split(' ')[1] || ''}</Text>
+                    <View
+                      style={{
+                        backgroundColor: '#F8F8F8',
+                        width: 120,
+                        height: 2,
+                        marginTop: 5,
+                      }}
+                    />
+                    <View style={{ marginBottom: -20 }}>
+                      <Button
+                        transparent
+                        onPress={() =>
+                          this.props.navigation.navigate('EditarPerfil')
+                        }>
+                        <TextRN style={{ color: COLORS.THEME }}>
+                          Editar Perfil
                       </TextRN>
-                      <Icon
-                        style={{color: COLORS.THEME, fontSize: 18}}
-                        type="Foundation"
-                        name="pencil"
-                      />
-                    </Button>
+                        <Icon
+                          style={{ color: COLORS.THEME, fontSize: 18 }}
+                          type="Foundation"
+                          name="pencil"
+                        />
+                      </Button>
+                    </View>
                   </View>
                 </View>
-              </View>
-
-              <View
-                style={{
-                  backgroundColor: '#F8F8F8',
-                  width: 630,
-                  height: 15,
-                }}
-              />
-
-              <List>
-                <ListItem>
-                  <Left>
-                    <Text style={styles.leftText}>Email</Text>
-                  </Left>
-                  <Text>{usuario.email || 'N/A'}</Text>
-                </ListItem>
-
-                <ListItem>
-                  <Left>
-                    <Text style={styles.leftText}>Data Nascimento</Text>
-                  </Left>
-                  <Text>
-                    {this.getDataNascimento(usuario.dataNascimento) || 'N/A'}
-                  </Text>
-                </ListItem>
-                <ListItem last>
-                  <Left>
-                    <Text style={styles.leftText}>Gênero</Text>
-                  </Left>
-                  <Text>{usuario.genero || 'Outro'}</Text>
-                </ListItem>
 
                 <View
                   style={{
@@ -179,64 +200,78 @@ class Perfil extends Component {
                   }}
                 />
 
-                <ListItem>
-                  {this.renderTextArea(
-                    'Formação Acadêmico',
-                    usuario.formacaoAcademica,
-                  )}
-                </ListItem>
-                <ListItem>
-                  {this.renderTextArea(
-                    'Formação Profissional',
-                    usuario.formacaoProfissional,
-                  )}
-                </ListItem>
-                <ListItem>
-                  {this.renderTextArea('Habilidades', usuario.habilidades)}
-                </ListItem>
-                <ListItem last>
-                  {this.renderTextArea('Experiencia', usuario.experiencia)}
-                </ListItem>
+                <List>
+                  <ListItem>
+                    <Left>
+                      <Text style={styles.leftText}>Email</Text>
+                    </Left>
+                    <Text>{usuario.email || 'N/A'}</Text>
+                  </ListItem>
 
+                  <ListItem>
+                    <Left>
+                      <Text style={styles.leftText}>Data Nascimento</Text>
+                    </Left>
+                    <Text>
+                      {this.getDataNascimento(usuario.dataNascimento) || 'N/A'}
+                    </Text>
+                  </ListItem>
+                  <ListItem last>
+                    <Left>
+                      <Text style={styles.leftText}>Gênero</Text>
+                    </Left>
+                    <Text>{usuario.genero || 'Outro'}</Text>
+                  </ListItem>
+
+                  <View
+                    style={{
+                      backgroundColor: '#F8F8F8',
+                      width: 630,
+                      height: 15,
+                    }}
+                  />
+
+                  <ListItem>
+                    {this.renderTextArea(
+                      'Formação Acadêmico',
+                      usuario.formacaoAcademica,
+                    )}
+                  </ListItem>
+                  <ListItem>
+                    {this.renderTextArea(
+                      'Formação Profissional',
+                      usuario.formacaoProfissional,
+                    )}
+                  </ListItem>
+                  <ListItem>
+                    {this.renderTextArea('Habilidades', usuario.habilidades)}
+                  </ListItem>
+                  <ListItem last>
+                    {this.renderTextArea('Experiencia', usuario.experiencia)}
+                  </ListItem>
+
+                  <View
+                    style={{
+                      backgroundColor: '#F8F8F8',
+                      width: 630,
+                      height: 15,
+                    }}
+                  />
+
+                  {this.renderRedeSocial()}
+                </List>
                 <View
                   style={{
-                    backgroundColor: '#F8F8F8',
-                    width: 630,
-                    height: 15,
-                  }}
-                />
-
-                <ListItem>
-                  <Left>
-                    <Text style={styles.leftText}>Lattes</Text>
-                  </Left>
-                  <Text>{usuario.redeSocial.lattes || 'N/A'}</Text>
-                </ListItem>
-                <ListItem>
-                  <Left>
-                    <Text style={styles.leftText}>Linkedin</Text>
-                  </Left>
-                  <Text>{usuario.redeSocial.linkedin || 'N/A'}</Text>
-                </ListItem>
-                <ListItem last>
-                  <Left>
-                    <Text style={styles.leftText}>Facebook</Text>
-                  </Left>
-                  <Text>{usuario.redeSocial.facebook || 'N/A'}</Text>
-                </ListItem>
-              </List>
-              <View
-                style={{
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  padding: 20,
-                }}>
-                <Button dark block onPress={() => this.logout()}>
-                  <Text>Sair</Text>
-                </Button>
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 20,
+                  }}>
+                  <Button dark block onPress={() => this.logout()}>
+                    <Text>Sair</Text>
+                  </Button>
+                </View>
               </View>
-            </View>
-          )}
+            )}
         </Content>
       </Container>
     );

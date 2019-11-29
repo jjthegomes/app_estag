@@ -19,7 +19,6 @@ import {
 import {connect} from 'react-redux';
 import {setUsuario} from '../../../actions/authGraphql';
 import {COLORS} from '../../../utils/colors';
-import apiGraphql from '../../../config/apiGraphql';
 import api from '../../../config/api';
 
 class VagaDetalhes extends Component {
@@ -40,100 +39,21 @@ class VagaDetalhes extends Component {
 
   async UNSAFE_componentWillMount() {
     const {id} = this.props.navigation.state.params;
-
     await this.getVaga(id);
   }
 
-  query = id => {
-    return JSON.stringify({
-      query: `
-      query{
-        vagaById(id:"${id}" ){
-            empresa{
-                nome
-                email
-                setor
-                sobre      
-              }
-              _id
-              nome
-              descricao
-              jornada
-              requisitos    
-              tipo
-        }
-      }
-      `,
-    });
-  };
-
   getVaga = async id => {
     try {
-      console.time('Time Vaga Graphql');
-      const response = await apiGraphql.post('/graphql', this.query(id));
-      console.timeEnd('Time Vaga Graphql');
-      console.log('[size graphql]', response.headers['content-length']);
+      const response = await api.get('/vaga/' + id);
+      console.log(response.data);
 
-      console.time('Time Vaga Rest');
-      const rest = await api.get('/vaga/' + id);
-      console.timeEnd('Time Vaga Rest');
-      console.log('[size rest]', rest.headers['content-length']);
-
-      this.setState({loading: false, vaga: response.data.data.vagaById});
+      this.setState({loading: false, vaga: response.data});
     } catch (error) {
       console.log(error);
-      console.timeEnd('Time Vaga Graphql');
       this.setState({loading: false});
-      if (error.data.errors.length)
-        Alert.alert('Atenção', error.data.errors[0].message);
-    }
-  };
-
-  submitHandler = async () => {
-    const {id} = this.props.navigation.state.params;
-
-    this.setState({loadingCandidatura: true});
-    const requestBody = {
-      query: `
-     mutation {
-      candidatarVaga(
-        vagaId:"${id}"), 
-        {
-          _id
-          vaga{
-            _id
-          }
-        }
+      if (error.data.error) {
+        Alert.alert('Atenção', error.data.error);
       }
-      `,
-    };
-
-    try {
-      console.time('Time Candidatura');
-
-      const res = await fetch(API, {
-        method: 'POST',
-        body: JSON.stringify(requestBody),
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.state.token}`,
-        },
-      });
-
-      const resData = await res.json();
-      console.timeEnd('Time Candidatura');
-      //console.log('SIZE', res.headers.map);
-
-      this.setState({loadingCandidatura: false});
-
-      if (res.status !== 200 && res.status !== 201) {
-        return Alert.alert('Atenção', resData.errors[0].message);
-      }
-      return Alert.alert('Atenção', 'Candidatura realizada!');
-    } catch (error) {
-      console.log(error);
-      console.timeEnd('Time Candidatura');
-      this.setState({loadingCandidatura: false});
     }
   };
 

@@ -59,10 +59,9 @@ export default class CadastroCliente extends Component {
   constructor() {
     super();
     this.state = {
-      contador: 0,
       currentPage: 0,
-      nome: 'Graph0',
-      email: Math.floor(Math.random() * 10000000 + Math.random()),
+      nome: 'Ivanildo Junior',
+      email: 'jjthegomes@gmail.com',
       senha: '12345',
       tipo: 'cliente',
       genero: 'Outro',
@@ -88,23 +87,9 @@ export default class CadastroCliente extends Component {
 
       loading: false,
       error: '',
-      tokenG: null,
-      tokenR: null,
+      token: null,
     };
   }
-
-  componentDidMount = async () => {
-    this.submitHandler();
-  };
-
-  postCSV = async (csvFilename = 'arquivo.csv', data = []) => {
-    try {
-      //   console.log({csvFilename, data});
-      const response = await api.post('/csv', {csvFilename, data});
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   storeToken = async (key = '@Estag:token', token) => {
     try {
@@ -114,146 +99,25 @@ export default class CadastroCliente extends Component {
     }
   };
   criarUsuario = async () => {
-    console.log('Contador', this.state.contador);
-
-    this.setState({
-      nome: 'GRAPH' + this.state.contador,
-      contador: this.state.contador + 1,
-      loading: true,
-      email: Math.floor(Math.random() * 10000000 + Math.random()),
-    });
-
-    let timeG = 0;
-    let sizeG = 0;
-    let timeR = 0;
-    let sizeR = 0;
-
-    const requestBody = {
-      query: `
-      mutation {
-        criarUsuario(usuarioInput: {
-            nome: "${this.state.nome}"
-            email: "${this.state.email}"
-            senha: "${this.state.senha}"
-            tipo: "${this.state.tipo}"
-            genero: "${this.state.genero}"
-            celular: "${this.state.celular}"
-            dataNascimento: "${this.state.dataNascimento}"            
-        }){
-          _id
-          token
-        }
-      }
-      `,
-    };
-
     try {
-      let tempoInicialGraphql = new Date().getTime();
-      let response = await apiGraphql.post(
-        '/graphql',
-        JSON.stringify(requestBody),
-      );
-      let tempoFinalGraphql = new Date().getTime();
-      timeG = tempoFinalGraphql - tempoInicialGraphql;
-      sizeG = response.headers['content-length'];
-
-      this.setState({tokenG: response.data.data.criarUsuario.token});
-      await this.storeToken('@Estag:tokenG', this.state.tokenG);
-      // await this.criarClienteGraph();
-
-      this.setState({
-        nome: 'REST' + this.state.contador,
-        email: Math.floor(Math.random() * 10000000 + Math.random()),
+      const response = await api.post('/auth/cadastro', {
+        nome: this.state.nome,
+        email: this.state.email,
+        senha: this.state.senha,
+        tipo: this.state.tipo,
+        genero: this.state.genero,
+        celular: this.state.celular,
+        dataNascimento: this.state.dataNascimento,
       });
-
-      try {
-        let tempoInicialRest = new Date().getTime();
-        let rest = await api.post('/auth/cadastro', {
-          nome: this.state.nome,
-          email: this.state.email,
-          senha: this.state.senha,
-          tipo: this.state.tipo,
-          genero: this.state.genero,
-          celular: this.state.celular,
-          dataNascimento: this.state.dataNascimento,
-        });
-        let tempoFinalRest = new Date().getTime();
-        timeR = tempoFinalRest - tempoInicialRest;
-        sizeR = rest.headers['content-length'];
-
-        this.setState({tokenR: rest.data.token});
-        await this.storeToken('@Estag:tokenR', this.state.tokenR);
-      } catch (e) {
-        console.log(e);
-      }
+      await this.storeToken('@Estag:token', response.data.token);
     } catch (e) {
       console.log(e);
     }
-
-    await this.postCSV('CadastroUsuarioCliente.csv', [
-      {
-        timeR,
-        sizeR,
-        timeG,
-        sizeG,
-      },
-    ]);
   };
 
   criarCliente = async () => {
-    //console.log('criarClienteGraph');
-
-    const requestBody = {
-      query: `
-       mutation {
-          criarCliente(clienteInput: {
-            telefone: "32342558"
-            formacaoAcademica: "${this.state.formacaoAcademica}"
-            formacaoProfissional: "${this.state.formacaoProfissional}"
-            habilidades: "${this.state.habilidades}"
-            experiencia: "${this.state.experiencia}"                       
-            endereco: {
-              cep: "${this.state.cep}"            
-              logradouro: "${this.state.logradouro}" 
-              cidade: "${this.state.cidade}"            
-              bairro: "${this.state.bairro}"            
-              uf: "${this.state.uf}"  
-              complemento: "${this.state.complemento}"  
-            },
-            redeSocial: {
-              facebook: "${this.state.facebook}"
-              linkedin: "${this.state.linkedin}"  
-              lattes: "${this.state.lattes}"  
-            }
-          }){
-            _id         
-          }
-        }
-      `,
-    };
-
-    let timeG = 0;
-    let sizeG = 0;
-    let timeR = 0;
-    let sizeR = 0;
-
     try {
-      let tempoInicialGraphql = new Date().getTime();
-      let response = await apiGraphql.post(
-        '/graphql',
-        JSON.stringify(requestBody),
-      );
-      let tempoFinalGraphql = new Date().getTime();
-      timeG = tempoFinalGraphql - tempoInicialGraphql;
-      sizeG = response.headers['content-length'];
-    } catch (e) {
-      console.log(e);
-      await this.deleterUsuario();
-    }
-
-    try {
-      let tempoInicialRest = new Date().getTime();
-      let rest = await api.post('/cliente', {
+      const response = await api.post('/cliente', {
         telefone: '32342558',
         formacaoAcademica: this.state.formacaoAcademica,
         formacaoProfissional: this.state.formacaoProfissional,
@@ -273,47 +137,22 @@ export default class CadastroCliente extends Component {
           lattes: this.state.lattes,
         },
       });
-      let tempoFinalRest = new Date().getTime();
-      timeR = tempoFinalRest - tempoInicialRest;
-      sizeR = rest.headers['content-length'];
-      return this.submitHandler();
+
+      console.log(response.data.cliente);
+      return this.props.navigation.navigate('Login');
     } catch (e) {
       console.log(e);
       await this.deleterUsuario();
     }
-
-    await this.postCSV('CadastroCliente.csv', [
-      {
-        timeR,
-        sizeR,
-        timeG,
-        sizeG,
-      },
-    ]);
   };
 
   submitHandler = async () => {
-    if (this.state.contador === MAX) {
-      return;
-    }
-
     await this.criarUsuario();
     await this.criarCliente();
   };
 
   deleterUsuario = async () => {
-    try {
-      const response = await apiGraphql.post(
-        '/graphql',
-        JSON.stringify({
-          query: 'mutation { deletarUsuario { _id } }',
-        }),
-      );
-
-      console.log(response.data);
-    } catch (error) {
-      console.log(error);
-    }
+    return console.log('delete usuario');
   };
 
   componentWillReceiveProps(nextProps, nextState) {
@@ -362,7 +201,9 @@ export default class CadastroCliente extends Component {
     if (this.state.currentPage <= 3 && this.state.currentPage >= 1) {
       this.setState({currentPage: this.state.currentPage - 1});
       // this.viewPager.setPage(this.state.currentPage - 1);
-    } else return false;
+    } else {
+      return false;
+    }
   };
 
   renderUsuario = () => {

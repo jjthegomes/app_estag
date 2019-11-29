@@ -22,10 +22,8 @@ import {
 } from 'native-base';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import {format} from 'date-fns';
-import {API} from '../../../utils';
 import {COLORS} from '../../../utils/colors';
 
-import apiGraphql from '../../../config/apiGraphql';
 import api from '../../../config/api';
 
 class Empresa extends Component {
@@ -66,28 +64,6 @@ class Empresa extends Component {
 
   submitHandler = async () => {
     this.setState({loading: true});
-    const requestBody = JSON.stringify({
-      query: `
-      mutation {
-        criarVaga(vagaInput: {
-          nome: "${this.state.nome}"
-          requisitos: "${this.state.requisitos}"
-          tipo: "${this.state.tipo}"
-          jornada: ${this.state.jornada}
-          modalidade: "${this.state.modalidade}"
-          local: "${this.state.local}"
-          escolaridade: "${this.state.escolaridade}"
-          descricao: "${this.state.descricao}"
-          dataFinal: "${new Date(
-            format(this.state.selectedDate, 'yyyy-MM-dd'),
-          ).toISOString()}"
-          dataInicio:  "${new Date().toISOString()}"              
-      }) {
-      _id
-      nome
-      }
-    }`,
-    });
 
     let objeto = {
       nome: this.state.nome,
@@ -105,25 +81,15 @@ class Empresa extends Component {
     };
 
     try {
-      console.time('Time Cadastro Vaga Graphql');
-      const response = await apiGraphql.post('/graphql', requestBody);
-      console.timeEnd('Time Cadastro Vaga Graphql');
-      console.log('[size graphql]', response.headers['content-length']);
-
-      console.time('Time Cadastro Vaga Rest');
-      const rest = await api.post('/vaga/', objeto);
-      console.timeEnd('Time Cadastro Vaga Rest');
-      console.log('[size rest]', rest.headers['content-length']);
+      const response = await api.post('/vaga/', objeto);
 
       this.setState({loading: false});
       Alert.alert('Atenção', 'Vaga cadastrada!');
-
       return this.props.navigation.navigate('VagaDetalhes', {
-        id: response.data.data.criarVaga._id,
+        id: response.data._id,
       });
     } catch (error) {
       console.log(error);
-      console.timeEnd('Time Cadastro Vaga Cadastro Vaga');
       this.setState({loading: false});
     }
   };

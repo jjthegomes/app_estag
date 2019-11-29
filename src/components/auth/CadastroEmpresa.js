@@ -28,7 +28,7 @@ export default class CadastroEmpresa extends Component {
     super();
     this.state = {
       nome: 'Jonas Gomes',
-      email: Math.floor(Math.random() * 10000000 + Math.random()),
+      email: 'jjthegomes@gmail.com',
       senha: '123',
       tipo: 'empresa',
 
@@ -47,26 +47,7 @@ export default class CadastroEmpresa extends Component {
     };
   }
 
-  postCSV = async (csvFilename = 'arquivo.csv', data = []) => {
-    try {
-      //   console.log({csvFilename, data});
-      const response = await api.post('/csv', {csvFilename, data});
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  UNSAFE_componentWillMount = async () => {
-    this.submitHandler();
-  };
-
   submitHandler = async () => {
-    if (this.state.contador === MAX) {
-      return;
-    }
-
-    console.log(this.state.contador);
-
     await this.criarUsuario();
     await this.criarEmpresa();
   };
@@ -80,133 +61,24 @@ export default class CadastroEmpresa extends Component {
   };
 
   criarUsuario = async () => {
-    this.setState({
-      nome: 'EMPRESA_GRAPH' + this.state.contador,
-      contador: this.state.contador + 1,
-      loading: true,
-      email: Math.floor(Math.random() * 10000000 + Math.random()),
-    });
-    let timeG = 0;
-    let sizeG = 0;
-    let timeR = 0;
-    let sizeR = 0;
-
-    const requestBody = {
-      query: `
-      mutation {
-        criarUsuario(usuarioInput: {
-            nome: "${this.state.nome}",
-            email: "${this.state.email}",
-            senha: "${this.state.senha}",
-            tipo: "${this.state.tipo}",
-        }){
-          _id
-          token   
-        }
-      }
-      `,
-    };
-
     try {
-      let tempoInicialGraphql = new Date().getTime();
-      let response = await apiGraphql.post(
-        '/graphql',
-        JSON.stringify(requestBody),
-      );
-      let tempoFinalGraphql = new Date().getTime();
-      timeG = tempoFinalGraphql - tempoInicialGraphql;
-      sizeG = response.headers['content-length'];
-
-      this.setState({
-        tokenG: response.data.data.criarUsuario.token,
-      });
-      await this.storeToken('@Estag:tokenG', this.state.tokenG);
-      // await this.criarEmpresaGraphql();
-    } catch (error) {
-      console.log(error);
-      this.setState({loading: false});
-    }
-
-    this.setState({
-      nome: 'EMPRESA_REST' + this.state.contador,
-      email: Math.floor(Math.random() * 10000000 + Math.random()),
-    });
-
-    try {
-      let tempoInicialRest = new Date().getTime();
-      let rest = await api.post('/auth/cadastro', {
+      const response = await api.post('/auth/cadastro', {
         nome: this.state.nome,
         email: this.state.email,
         senha: this.state.senha,
         tipo: this.state.tipo,
       });
-      let tempoFinalRest = new Date().getTime();
-      timeR = tempoFinalRest - tempoInicialRest;
-      sizeR = rest.headers['content-length'];
 
-      this.setState({tokenR: rest.data.token});
-      await this.storeToken('@Estag:tokenR', this.state.tokenR);
-      // await this.criarEmpresaRest();
+      await this.storeToken('@Estag:token', response.data.token);
     } catch (error) {
       console.log(error);
       this.setState({loading: false});
     }
-
-    await this.postCSV('CadastroUsuarioEmpresa.csv', [
-      {
-        timeR,
-        sizeR,
-        timeG,
-        sizeG,
-      },
-    ]);
   };
 
   criarEmpresa = async () => {
-    let timeG = 0;
-    let sizeG = 0;
-    let timeR = 0;
-    let sizeR = 0;
-
-    const requestBody = {
-      query: `
-       mutation {
-          criarEmpresa(empresaInput: {
-            nome: "${this.state.empresaNome}"
-            cnpj:  "${this.state.cnpj}"
-            telefone: "${this.state.telefone}"
-            sobre:  "${this.state.sobre}"
-            setor:  "${this.state.setor}"
-            email:  "${this.state.empresaEmail}"
-          }){
-            _id
-            }
-        }
-      `,
-    };
-
     try {
-      let tempoInicialGraphql = new Date().getTime();
-      let response = await apiGraphql.post(
-        '/graphql',
-        JSON.stringify(requestBody),
-      );
-      let tempoFinalGraphql = new Date().getTime();
-      timeG = tempoFinalGraphql - tempoInicialGraphql;
-      sizeG = response.headers['content-length'];
-
-      this.setState({loading: false});
-
-      //return this.props.navigation.navigate('Login');
-    } catch (error) {
-      console.log(error);
-      await this.deleterUsuario();
-      this.setState({loading: false});
-    }
-
-    try {
-      let tempoInicialRest = new Date().getTime();
-      let rest = await api.post('/empresa', {
+      const response = await api.post('/empresa', {
         nome: this.state.empresaNome,
         cnpj: this.state.cnpj,
         telefone: this.state.telefone,
@@ -214,25 +86,14 @@ export default class CadastroEmpresa extends Component {
         setor: this.state.setor,
         email: this.state.empresaEmail,
       });
-      let tempoFinalRest = new Date().getTime();
-      timeR = tempoFinalRest - tempoInicialRest;
-      sizeR = rest.headers['content-length'];
+
+      this.setState({loading: false});
+      return this.props.navigation.navigate('Login');
     } catch (e) {
       console.log(e);
       await this.deleterUsuario();
       this.setState({loading: false});
     }
-
-    await this.postCSV('CadastroEmpresa.csv', [
-      {
-        timeR,
-        sizeR,
-        timeG,
-        sizeG,
-      },
-    ]);
-
-    this.submitHandler();
   };
 
   render() {

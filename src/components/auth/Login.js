@@ -17,15 +17,11 @@ import {connect} from 'react-redux';
 
 import {width, height} from '../../utils';
 import {setUsuario} from '../../actions/authGraphql';
-import {queryLoginCliente, queryLoginEmpresa} from './requests';
 
-import apiGraphql from '../../config/apiGraphql';
 import api from '../../config/api';
 
 import {COLORS} from '../../utils/colors';
 import {contar} from '../../actions/counter';
-
-const MAX = 5;
 
 class Login extends Component {
   constructor() {
@@ -33,111 +29,52 @@ class Login extends Component {
     this.state = {
       email: 'jjthegomes@gmail.com',
       // email: 'empresa@gmail.com',
-      senha: '12345',
+      senha: '123',
       loading: false,
     };
   }
 
-  UNSAFE_componentWillMount() {
-    //this.submitHandler();
-  }
-
-  submitHandler = () => {
-    if (this.state.email.toLowerCase() !== 'jjthegomes@gmail.com') {
-      return this.login(queryLoginEmpresa(this.state), 'Vaga');
-    }
-    return this.login(queryLoginCliente(this.state), 'Vagas');
-  };
-
-  login = async (query, screen = 'Vagas') => {
-    if (this.props.contador >= MAX) {
-      console.log('Done!');
-
-      return Alert.alert('EXPERIMENTO', 'Encerrado');
-    }
+  login = async () => {
     this.setState({loading: true});
 
     try {
-      // console.time('Time Login Graphql');
-      // let response = await apiGraphql.post('/graphql', query);
-      // console.timeEnd('Time Login Graphql');
-      // console.log('[size graphql]', response.headers['content-length']);
+      const response = await api.post('/auth/login', this.state);
 
-      // console.time('Time Login REST');
-      // let rest = await api.post('/auth/login', this.state);
-      // console.timeEnd('Time Login REST');
-      // console.log('[size rest]', rest.headers['content-length']);
-
-      let tempoInicialGraphql = new Date().getTime();
-      let response = await apiGraphql.post('/graphql', query);
-      let tempoFinalGraphql = new Date().getTime();
-      let timeG = tempoFinalGraphql - tempoInicialGraphql;
-      let sizeG = response.headers['content-length'];
-
-      let tempoInicialRest = new Date().getTime();
-      let rest = await api.post('/auth/login', this.state);
-      let tempoFinalRest = new Date().getTime();
-      let timeR = tempoFinalRest - tempoInicialRest;
-      let sizeR = rest.headers['content-length'];
-
-      const CSV = {
-        csvFilename: './LoginCliente.csv',
-
-        data: [
-          {
-            timeR,
-            sizeR,
-            timeG,
-            sizeG,
-          },
-        ],
-      };
-
-      const r = await api.post('/csv', CSV);
-      console.log(CSV);
-      this.props.contar();
+      await this.storeToken(response.data.token);;
       this.setState({loading: false});
-
-      if (response.status == 200) {
-        this.storeData(response.data.data.login);
-        this.props.navigation.navigate(screen);
+      if (response.data.empresa !== undefined) {
+        this.props.setUsuario(this.parseUsuario(response.data.empresa));
+        return this.props.navigation.navigate('Vaga');
+      } else {
+        this.props.setUsuario(this.parseUsuario(response.data.cliente));
+        return this.props.navigation.navigate('Vagas');
       }
     } catch (error) {
       console.log(error);
       this.setState({loading: false});
-      if (error.data.errors.length)
-        Alert.alert('Atenção', error.data.errors[0].message);
-
-      //return console.log(error.data);
+      Alert.alert('Erro', error.data.error);
     }
   };
 
   parseUsuario = usuario => {
-    if (usuario.usuario.tipo == 'cliente')
-      return {...usuario.cliente, ...usuario.usuario};
-    else {
+    console.log(usuario);
+    if (usuario.tipo == 'cliente') {
+      return {...usuario, ...usuario.usuario};
+    } else {
       return {
-        ...usuario.usuario,
+        ...usuario.usuario.usuario,
         ...usuario.empresa,
-        nomeEmpresa: usuario.empresa.nome,
+        nomeEmpresa: usuario.nome,
         nome: usuario.usuario.nome,
-        emailEmpresa: usuario.empresa.email,
+        emailEmpresa: usuario.email,
         email: usuario.usuario.email,
       };
     }
   };
 
-  storeData = async usuario => {
-    this.props.setUsuario(this.parseUsuario(usuario));
-
-    const firstPair = [
-      '@Estag:usuario',
-      JSON.stringify(this.parseUsuario(usuario)),
-    ];
-    const secondPair = ['@Estag:tokenG', usuario.token];
-    const thirdyPair = ['@Estag:tokenR', usuario.token];
+  storeToken = async token => {
     try {
-      await AsyncStorage.multiSet([firstPair, secondPair, thirdyPair]);
+      await AsyncStorage.setItem('@Estag:token', token);
     } catch (e) {
       console.log(e);
     }
@@ -182,9 +119,7 @@ class Login extends Component {
             <Spinner color={COLORS.THEME} size="large" />
           ) : (
             <View>
-              <TouchableOpacity
-                style={styles.buttonStyle}
-                onPress={() => this.submitHandler()}>
+              <TouchableOpacity style={styles.buttonStyle} onPress={this.login}>
                 <Text style={styles.textStyle}>Entrar</Text>
               </TouchableOpacity>
               <TouchableOpacity
