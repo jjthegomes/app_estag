@@ -83,7 +83,9 @@ class Perfil extends Component {
 
   getNome = nome => {
     try {
-      if (!nome) return 'Empresa';
+      if (!nome) {
+        return 'Empresa';
+      }
       return nome.split(' ')[0];
     } catch (error) {
       console.log(error);
@@ -93,7 +95,9 @@ class Perfil extends Component {
 
   getSobreNome = nome => {
     try {
-      if (!nome) return 'Empresa';
+      if (!nome) {
+        return 'Empresa';
+      }
       return nome.split(' ')[1];
     } catch (error) {
       console.log(error);
@@ -128,7 +132,7 @@ class Perfil extends Component {
                 />
 
                 <View style={{padding: 20, marginTop: 10}}>
-                  <Text>{usuario.nomeEmpresa || ''}</Text>
+                  <Text>{usuario.nome || ''}</Text>
                   <View
                     style={{
                       backgroundColor: '#F8F8F8',
@@ -168,14 +172,14 @@ class Perfil extends Component {
                   <Left>
                     <Text style={styles.leftText}>Responsável</Text>
                   </Left>
-                  <Text>{usuario.nome || 'N/A'}</Text>
+                  <Text>{usuario.usuario.nome || 'N/A'}</Text>
                 </ListItem>
 
                 <ListItem>
                   <Left>
                     <Text style={styles.leftText}>Email</Text>
                   </Left>
-                  <Text>{usuario.email || 'N/A'}</Text>
+                  <Text>{usuario.usuario.email || 'N/A'}</Text>
                 </ListItem>
 
                 <ListItem>
@@ -183,14 +187,15 @@ class Perfil extends Component {
                     <Text style={styles.leftText}>Data Nascimento</Text>
                   </Left>
                   <Text>
-                    {this.getDataNascimento(usuario.dataNascimento) || 'N/A'}
+                    {this.getDataNascimento(usuario.usuario.dataNascimento) ||
+                      'N/A'}
                   </Text>
                 </ListItem>
                 <ListItem last>
                   <Left>
                     <Text style={styles.leftText}>Gênero</Text>
                   </Left>
-                  <Text>{usuario.genero || 'Outro'}</Text>
+                  <Text>{usuario.usuario.genero || 'Outro'}</Text>
                 </ListItem>
 
                 <View
@@ -205,7 +210,7 @@ class Perfil extends Component {
                   <Left>
                     <Text style={styles.leftText}>Email de Contato</Text>
                   </Left>
-                  <Text>{usuario.emailEmpresa || 'N/A'}</Text>
+                  <Text>{usuario.email || 'N/A'}</Text>
                 </ListItem>
                 <ListItem last>
                   <Left>

@@ -22,6 +22,7 @@ import {connect} from 'react-redux';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import {format} from 'date-fns';
 import {COLORS} from '../../../utils/colors';
+import api from '../../../config/api';
 
 class EditarPerfil extends Component {
   constructor() {
@@ -35,9 +36,20 @@ class EditarPerfil extends Component {
 
   UNSAFE_componentWillMount = () => {
     const {usuario} = this.props;
+    let date = format(new Date(), 'dd/MM/yyyy');
+    let sex = 'Outro';
+
+    if (usuario.genero !== undefined) {
+      sex = usuario.usuario.genero;
+    }
+
+    if (usuario.usuario.dataNascimento !== undefined) {
+      date = format(new Date(usuario.usuario.dataNascimento), 'dd/MM/yyyy');
+    }
 
     this.setState({
-      selectedDate: format(new Date(usuario.dataNascimento), 'dd/MM/yyyy'),
+      selectedDate: date,
+      selectedSex: sex,
     });
   };
 
@@ -59,6 +71,22 @@ class EditarPerfil extends Component {
   onValueChange(value) {
     this.setState({selectedSex: value});
   }
+
+  handleEditar = async () => {
+    const {usuario} = this.props;
+    let newEmpresa = {
+      nome: 'Estag2',
+      email: 'estag@hotmail.com',
+    };
+
+    try {
+      const response = await api.put('/empresa/' + usuario._id, newEmpresa);
+      console.log(response.data);
+      this.props.navigation.goBack();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   render() {
     const {usuario} = this.props;
@@ -88,12 +116,12 @@ class EditarPerfil extends Component {
         <Content padder>
           <Form>
             <Item stackedLabel>
-              <Label>Nome Completo</Label>
-              <Input value={usuario.nome || ''} />
+              <Label>Nome Reponsavel</Label>
+              <Input value={usuario.usuario.nome || ''} />
             </Item>
             <Item stackedLabel>
               <Label>Email</Label>
-              <Input value={usuario.email || ''} />
+              <Input value={usuario.usuario.email || ''} />
             </Item>
 
             <Item inlineLabel>
@@ -108,9 +136,9 @@ class EditarPerfil extends Component {
                 selectedValue={this.state.selectedSex}
                 onValueChange={this.onValueChange.bind(this)}>
                 <Picker.Item label="Selecione Genero" value="null" />
-                <Picker.Item label="Masculino" value="0" />
-                <Picker.Item label="Feminino" value="1" />
-                <Picker.Item label="Outro" value="2" />
+                <Picker.Item label="Masculino" value="Masculino" />
+                <Picker.Item label="Feminino" value="Feminino" />
+                <Picker.Item label="Outro" value="Outro" />
               </Picker>
             </Item>
 
@@ -123,8 +151,12 @@ class EditarPerfil extends Component {
               />
             </Item>
             <Item stackedLabel>
-              <Label>Email de Contato</Label>
-              <Input value={usuario.emailEmpresa || ''} />
+              <Label>Nome da Empresa</Label>
+              <Input value={usuario.nome || ''} />
+            </Item>
+            <Item stackedLabel>
+              <Label>Email da Empresa</Label>
+              <Input value={usuario.email || ''} />
             </Item>
             <Item stackedLabel last>
               <Label>Telefone</Label>
@@ -136,7 +168,7 @@ class EditarPerfil extends Component {
             onConfirm={this.handleDatePicked}
             onCancel={this.hideDateTimePicker}
             titleIOS={'Selecione a Data'}
-            date={new Date(usuario.dataNascimento)}
+            date={new Date()}
           />
           <View
             style={{
@@ -144,10 +176,7 @@ class EditarPerfil extends Component {
               alignItems: 'center',
               marginTop: 10,
             }}>
-            <Button
-              success
-              block
-              onPress={() => this.props.navigation.goBack()}>
+            <Button success block onPress={() => this.handleEditar()}>
               <Text>Savar</Text>
             </Button>
           </View>
@@ -160,7 +189,4 @@ class EditarPerfil extends Component {
 const mapStateToProps = state => ({
   usuario: state.Auth.usuario,
 });
-export default connect(
-  mapStateToProps,
-  {},
-)(EditarPerfil);
+export default connect(mapStateToProps, {})(EditarPerfil);

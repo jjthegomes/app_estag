@@ -40,10 +40,10 @@ class Login extends Component {
     try {
       const response = await api.post('/auth/login', this.state);
 
-      await this.storeToken(response.data.token);;
+      await this.storeToken(response.data.token);
       this.setState({loading: false});
       if (response.data.empresa !== undefined) {
-        this.props.setUsuario(this.parseUsuario(response.data.empresa));
+        this.props.setUsuario(response.data.empresa);
         return this.props.navigation.navigate('Vaga');
       } else {
         this.props.setUsuario(this.parseUsuario(response.data.cliente));
@@ -57,19 +57,7 @@ class Login extends Component {
   };
 
   parseUsuario = usuario => {
-    console.log(usuario);
-    if (usuario.tipo == 'cliente') {
-      return {...usuario, ...usuario.usuario};
-    } else {
-      return {
-        ...usuario.usuario.usuario,
-        ...usuario.empresa,
-        nomeEmpresa: usuario.nome,
-        nome: usuario.usuario.nome,
-        emailEmpresa: usuario.email,
-        email: usuario.usuario.email,
-      };
-    }
+    return {...usuario, ...usuario.usuario};
   };
 
   storeToken = async token => {
