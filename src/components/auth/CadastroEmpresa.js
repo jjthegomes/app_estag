@@ -27,9 +27,9 @@ export default class CadastroEmpresa extends Component {
   constructor() {
     super();
     this.state = {
-      nome: 'Jonas Gomes',
-      email: 'jjthegomes@gmail.com',
-      senha: '123',
+      nome: '',
+      email: '',
+      senha: '',
       tipo: 'empresa',
 
       empresaNome: 'Estag Company',

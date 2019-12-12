@@ -27,9 +27,9 @@ class Login extends Component {
   constructor() {
     super();
     this.state = {
-      email: 'jjthegomes@gmail.com',
+      email: '',
       // email: 'empresa@gmail.com',
-      senha: '123',
+      senha: '',
       loading: false,
     };
   }
@@ -87,6 +87,7 @@ class Login extends Component {
             <TextInput
               style={styles.textInput}
               placeholder="Email"
+              placeholderTextColor={'grey'}
               keyboardType="email-address"
               value={this.state.email}
               onChangeText={email => this.setState({email})}
@@ -96,6 +97,7 @@ class Login extends Component {
             <TextInput
               style={styles.textInput}
               placeholder="Senha"
+              placeholderTextColor={'grey'}
               keyboardType="default"
               secureTextEntry
               value={this.state.senha}
@@ -169,6 +171,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   textInput: {
+    color: 'black',
     fontSize: 20,
     marginTop: Platform.OS === 'ios' ? 10 : 5,
     textAlign: 'center',

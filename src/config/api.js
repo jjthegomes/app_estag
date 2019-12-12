@@ -2,11 +2,11 @@ import {create} from 'apisauce';
 import AsyncStorage from '@react-native-community/async-storage';
 
 const PORTA = '3001';
-//const IP = 'http://192.168.0.106';
+const DNS = 'https://estag.com.br';
 const IP = 'http://localhost';
 const api = create({
-  //  baseURL: `${DNS}/api`, //DOCKER
-  baseURL: `${IP}:${PORTA}/api`, //LOCAL
+  baseURL: `${DNS}/api`, //DOCKER
+  //baseURL: `${IP}:${PORTA}/api`, //LOCAL
   timeout: 15000,
 });
 

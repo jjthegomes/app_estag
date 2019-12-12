@@ -60,9 +60,9 @@ export default class CadastroCliente extends Component {
     super();
     this.state = {
       currentPage: 0,
-      nome: 'Ivanildo Junior',
-      email: 'jjthegomes@gmail.com',
-      senha: '12345',
+      nome: '',
+      email: '',
+      senha: '',
       tipo: 'cliente',
       genero: 'Outro',
       celular: '(32)9985-9717',
